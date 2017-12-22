@@ -1,0 +1,23 @@
+{
+    "name": "jfnetwork/doctrine-encrypted-object",
+    "type": "library",
+    "license": "MIT",
+    "description": "Doctrine mapping type to store encrypted objects",
+    "require": {
+        "php": ">=7.0",
+        "symfony/framework-bundle": "^4.0",
+        "doctrine/orm": "^2.5",
+        "defuse/php-encryption": "^2.1"
+    },
+    "autoload": {
+        "psr-4": {
+            "Jfnetwork\\DoctrineEncryptedObject\\" : "src"
+        }
+    },
+    "authors": [
+        {
+            "name": "Anton Eremin",
+            "homepage": "http://jfnet.de/"
+        }
+    ]
+}
