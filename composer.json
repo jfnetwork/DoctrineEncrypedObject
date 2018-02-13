@@ -1,6 +1,6 @@
 {
     "name": "jfnetwork/doctrine-encrypted-object",
-    "type": "library",
+    "type": "symfony-bundle",
     "license": "MIT",
     "description": "Doctrine mapping type to store encrypted objects",
     "require": {

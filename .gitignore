@@ -1,4 +1,4 @@
-# Created by .ignore support plugin (hsz.mobi)
+/vendor/
 /app/cache/*
 /app/logs/*
 !app/cache/.gitkeep
