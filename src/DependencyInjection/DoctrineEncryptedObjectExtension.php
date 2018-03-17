@@ -22,5 +22,4 @@ class DoctrineEncryptedObjectExtension extends Extension
         $definition->setArguments([$config['key']]);
         $definition->setPrivate(false);
     }
-
 }

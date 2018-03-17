@@ -46,10 +46,11 @@ class DoctrineEncryptedObject extends Type
     }
 
     /**
-     * @param mixed            $value
+     * @param mixed $value
      * @param AbstractPlatform $platform
      *
      * @return mixed|string
+     * @throws \RuntimeException
      * @throws \Defuse\Crypto\Exception\EnvironmentIsBrokenException
      *
      * @SuppressWarnings(PHPMD.UnusedFormalParameter)
@@ -58,7 +59,7 @@ class DoctrineEncryptedObject extends Type
     {
         $this->assertKeyWasSet();
 
-        $randomGarbageLength = \random_int(64,256);
+        $randomGarbageLength = \random_int(64, 256);
         $randomGarbage = \random_bytes($randomGarbageLength);
         return Crypto::encrypt(
             \pack('Ca*', $randomGarbageLength, $randomGarbage).\serialize($value),
@@ -67,11 +68,12 @@ class DoctrineEncryptedObject extends Type
     }
 
     /**
-     * @param mixed            $value
+     * @param mixed $value
      * @param AbstractPlatform $platform
      *
      * @return mixed|null
      *
+     * @throws \RuntimeException
      * @throws \Defuse\Crypto\Exception\EnvironmentIsBrokenException
      * @throws \Defuse\Crypto\Exception\WrongKeyOrModifiedCiphertextException
      * @SuppressWarnings(PHPMD.UnusedFormalParameter)
@@ -93,6 +95,9 @@ class DoctrineEncryptedObject extends Type
         return \unserialize($decodedString);
     }
 
+    /**
+     * @throws \RuntimeException
+     */
     private function assertKeyWasSet()
     {
         if (!$this->key) {
