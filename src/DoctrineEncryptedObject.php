@@ -10,7 +10,7 @@ use RuntimeException;
 
 class DoctrineEncryptedObject extends Type
 {
-    const TYPE_NAME = 'encoded_object';
+    const TYPE_NAME = 'encrypted_object';
 
     /** @var Key */
     private $key;
