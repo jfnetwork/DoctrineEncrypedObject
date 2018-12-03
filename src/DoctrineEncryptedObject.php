@@ -59,7 +59,7 @@ class DoctrineEncryptedObject extends Type
     {
         $this->assertKeyWasSet();
 
-        $randomGarbageLength = \random_int(64, 256);
+        $randomGarbageLength = \random_int(64, 255);
         $randomGarbage = \random_bytes($randomGarbageLength);
         return Crypto::encrypt(
             \pack('Ca*', $randomGarbageLength, $randomGarbage).\serialize($value),
