@@ -34,7 +34,7 @@ class DoctrineEncryptedObject extends Type
      */
     public function getSQLDeclaration(array $fieldDeclaration, AbstractPlatform $platform): string
     {
-        return $platform->getClobTypeDeclarationSQL($fieldDeclaration);
+        return $platform->getBlobTypeDeclarationSQL($fieldDeclaration);
     }
 
     /**
@@ -63,7 +63,8 @@ class DoctrineEncryptedObject extends Type
         $randomGarbage = \random_bytes($randomGarbageLength);
         return Crypto::encrypt(
             \pack('Ca*', $randomGarbageLength, $randomGarbage).\serialize($value),
-            $this->key
+            $this->key,
+            true
         );
     }
 
@@ -86,7 +87,12 @@ class DoctrineEncryptedObject extends Type
             return null;
         }
 
-        $decodedString = Crypto::decrypt($value, $this->key);
+        /** @noinspection SpellCheckingInspection */
+        $decodedString = Crypto::decrypt(
+            $value,
+            $this->key,
+            \count_chars('0123456789abcdef'.$value, 3) !== '0123456789abcdef'
+        );
 
         $randomGarbageLength = \ord($decodedString[0]);
         $decodedString = \substr($decodedString, $randomGarbageLength + 1);

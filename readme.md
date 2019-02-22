@@ -20,26 +20,12 @@ return [
     Jfnetwork\DoctrineEncryptedObject\DoctrineEncryptedObjectBundle::class => ['all' => true],
 ];
 ```
-
-### Symfony 3
-AppKernel.php:
-```php
-class AppKernel extends Kernel
-{
-    public function registerBundles(): array
-    {
-        $bundles = [
-            ...,
-            new Jfnetwork\DoctrineEncryptedObject\DoctrineEncryptedObjectBundle(),
-        ];
-```
-
 ## Sample Configuration
 ```yaml
 doctrine_encrypted_object:
-    key: 'your_secure_key'
+    key: '%env(DOCTRINE_ENCRYPTED_OBJECT_KEY)%'
 ```
-The key can be generated with command:
+And the ENV variable should be generated with command:
 ```
 vendor/bin/generate-defuse-key
 ``` 
@@ -52,4 +38,11 @@ More info about key generation at [tutorial](https://github.com/defuse/php-encry
  * @ORM\Column(name="your_secure_field", type="encoded_object")
  */
 private $yourSecureField;
+```
+
+## Upgrade from 1.0 to 1.1
+
+The field type was changed from TEXT to BLOB with 1.1. The Doctrine should make a suitable migration for you. Optionally you can add update query from HEX values to binary. For example for MySQL:
+```sql
+UPDATE `your_table` SET `your_secret_field` = UNHEX(`your_secret_field`)
 ```

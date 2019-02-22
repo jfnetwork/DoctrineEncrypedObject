@@ -1,2 +1,2 @@
 doctrine_encrypted_object:
-    key: here should be your key
+    key: '%env(DOCTRINE_ENCRYPTED_OBJECT_KEY)%'
