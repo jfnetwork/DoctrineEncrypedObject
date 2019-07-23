@@ -7,16 +7,17 @@ use Symfony\Component\Config\Definition\ConfigurationInterface;
 
 class Configuration implements ConfigurationInterface
 {
-    public function getConfigTreeBuilder()
+    /**
+     * @return TreeBuilder
+     */
+    public function getConfigTreeBuilder(): TreeBuilder
     {
-        $treeBuilder = new TreeBuilder();
-        $rootNode = $treeBuilder->root('doctrine_encrypted_object');
+        $treeBuilder = new TreeBuilder('doctrine_encrypted_object');
+        $rootNode = $treeBuilder->getRootNode();
 
-        $rootNode
-            ->children()
-                ->scalarNode('key')->isRequired()->end()
-            ->end()
-        ;
+        $children = $rootNode->children();
+        $keyNode = $children->scalarNode('key');
+        $keyNode->isRequired();
 
         return $treeBuilder;
     }
