@@ -34,7 +34,8 @@ class DoctrineEncryptedObject extends Type
      */
     public function getSQLDeclaration(array $fieldDeclaration, AbstractPlatform $platform): string
     {
-        return $platform->getBlobTypeDeclarationSQL($fieldDeclaration);
+        return $platform->getBlobTypeDeclarationSQL($fieldDeclaration)
+            . ' COMMENT \'(DC2Type:' . self::TYPE_NAME . ')\'';
     }
 
     /**
