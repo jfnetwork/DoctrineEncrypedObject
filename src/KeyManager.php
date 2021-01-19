@@ -3,32 +3,20 @@
 namespace Jfnetwork\DoctrineEncryptedObject;
 
 use Doctrine\DBAL\Types\Type;
+use RuntimeException;
 
 class KeyManager
 {
-
-    /**
-     * @var string
-     */
-    private $key;
-
-    /**
-     * @param string $key
-     */
-    public function __construct(string $key)
+    public function __construct(private string $key)
     {
-        $this->key = $key;
     }
 
-    /**
-     * @throws \Defuse\Crypto\Exception\BadFormatException
-     * @throws \Defuse\Crypto\Exception\EnvironmentIsBrokenException
-     * @throws \Doctrine\DBAL\DBALException
-     */
-    public function setKey()
+    public function setKey(): void
     {
-        /** @var DoctrineEncryptedObject $type */
         $type = Type::getType(DoctrineEncryptedObject::TYPE_NAME);
+        if (!$type instanceof DoctrineEncryptedObject) {
+            throw new RuntimeException('Could not get DoctrineEncryptedObject type');
+        }
         $type->setKey($this->key);
     }
 }

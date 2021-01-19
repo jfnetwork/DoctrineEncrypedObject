@@ -4,7 +4,7 @@
     "license": "MIT",
     "description": "Doctrine mapping type to store encrypted objects",
     "require": {
-        "php": ">=7.0",
+        "php": "8.0.*",
         "doctrine/orm": "^2.5",
         "defuse/php-encryption": "^2.1",
         "symfony/http-kernel": "^4.0",

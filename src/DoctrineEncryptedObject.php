@@ -3,84 +3,67 @@
 namespace Jfnetwork\DoctrineEncryptedObject;
 
 use Defuse\Crypto\Crypto;
+use Defuse\Crypto\Exception\EnvironmentIsBrokenException;
+use Defuse\Crypto\Exception\WrongKeyOrModifiedCiphertextException;
 use Defuse\Crypto\Key;
 use Doctrine\DBAL\Platforms\AbstractPlatform;
 use Doctrine\DBAL\Types\Type;
 use RuntimeException;
 
+use function count_chars;
+use function ord;
+use function pack;
+use function random_bytes;
+use function random_int;
+use function serialize;
+use function substr;
+use function unserialize;
+
 class DoctrineEncryptedObject extends Type
 {
-    const TYPE_NAME = 'encrypted_object';
+    public const TYPE_NAME = 'encrypted_object';
 
-    /** @var Key */
-    private $key;
+    private Key $key;
 
-    /**
-     * @param string $key
-     *
-     * @throws \Defuse\Crypto\Exception\BadFormatException
-     * @throws \Defuse\Crypto\Exception\EnvironmentIsBrokenException
-     */
-    public function setKey(string $key)
+    public function setKey(string $key): void
     {
         $this->key = Key::loadFromAsciiSafeString($key);
     }
 
-    /**
-     * @param array            $fieldDeclaration
-     * @param AbstractPlatform $platform
-     *
-     * @return string
-     */
-    public function getSQLDeclaration(array $fieldDeclaration, AbstractPlatform $platform): string
+    public function getSQLDeclaration(array $column, AbstractPlatform $platform): string
     {
-        return $platform->getBlobTypeDeclarationSQL($fieldDeclaration)
+        return $platform->getBlobTypeDeclarationSQL($column)
             . ' COMMENT \'(DC2Type:' . self::TYPE_NAME . ')\'';
     }
 
-    /**
-     * @return string
-     */
     public function getName(): string
     {
         return self::TYPE_NAME;
     }
 
     /**
-     * @param mixed $value
-     * @param AbstractPlatform $platform
-     *
-     * @return mixed|string
-     * @throws \RuntimeException
-     * @throws \Defuse\Crypto\Exception\EnvironmentIsBrokenException
-     *
+     * @throws EnvironmentIsBrokenException
      * @SuppressWarnings(PHPMD.UnusedFormalParameter)
      */
-    public function convertToDatabaseValue($value, AbstractPlatform $platform)
+    public function convertToDatabaseValue(mixed $value, AbstractPlatform $platform): string
     {
         $this->assertKeyWasSet();
 
-        $randomGarbageLength = \random_int(64, 255);
-        $randomGarbage = \random_bytes($randomGarbageLength);
+        $randomGarbageLength = random_int(64, 255);
+        $randomGarbage = random_bytes($randomGarbageLength);
         return Crypto::encrypt(
-            \pack('Ca*', $randomGarbageLength, $randomGarbage).\serialize($value),
+            pack('Ca*', $randomGarbageLength, $randomGarbage) . serialize($value),
             $this->key,
             true
         );
     }
 
     /**
-     * @param mixed $value
-     * @param AbstractPlatform $platform
-     *
-     * @return mixed|null
-     *
-     * @throws \RuntimeException
-     * @throws \Defuse\Crypto\Exception\EnvironmentIsBrokenException
-     * @throws \Defuse\Crypto\Exception\WrongKeyOrModifiedCiphertextException
+     * @throws WrongKeyOrModifiedCiphertextException
+     * @throws EnvironmentIsBrokenException
      * @SuppressWarnings(PHPMD.UnusedFormalParameter)
      */
-    public function convertToPHPValue($value, AbstractPlatform $platform)
+    public function convertToPHPValue(mixed $value, AbstractPlatform $platform): mixed
     {
         $this->assertKeyWasSet();
 
@@ -92,20 +75,17 @@ class DoctrineEncryptedObject extends Type
         $decodedString = Crypto::decrypt(
             $value,
             $this->key,
-            \count_chars('0123456789abcdef'.$value, 3) !== '0123456789abcdef'
+            count_chars('0123456789abcdef'.$value, 3) !== '0123456789abcdef'
         );
 
-        $randomGarbageLength = \ord($decodedString[0]);
-        $decodedString = \substr($decodedString, $randomGarbageLength + 1);
+        $randomGarbageLength = ord($decodedString[0]);
+        $decodedString = substr($decodedString, $randomGarbageLength + 1);
 
         /** @noinspection UnserializeExploitsInspection */
-        return \unserialize($decodedString);
+        return unserialize($decodedString);
     }
 
-    /**
-     * @throws \RuntimeException
-     */
-    private function assertKeyWasSet()
+    private function assertKeyWasSet(): void
     {
         if (!$this->key) {
             throw new RuntimeException('encrypt key was not set');
