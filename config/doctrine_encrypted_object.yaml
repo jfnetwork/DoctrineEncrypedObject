@@ -1,2 +1,0 @@
-doctrine_encrypted_object:
-    key: '%env(DOCTRINE_ENCRYPTED_OBJECT_KEY)%'

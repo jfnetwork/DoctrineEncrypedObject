@@ -15,6 +15,7 @@ class Configuration implements ConfigurationInterface
         $children = $rootNode->children();
         $keyNode = $children->scalarNode('key');
         $keyNode->isRequired();
+        $children->scalarNode('encryption_way');
 
         return $treeBuilder;
     }

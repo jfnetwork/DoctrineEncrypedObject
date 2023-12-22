@@ -1,0 +1,16 @@
+parameters:
+    doctrine_encrypted_object:
+        default_encryption_way: openssl
+        key: '%env(DOCTRINE_ENCRYPTED_OBJECT_KEY)%'
+        encryption_way: '%env(default:default_encryption_way:DOCTRINE_ENCRYPTED_OBJECT_ENCRYPTION_WAY)%'
+services:
+    Jfnetwork\MasterData\Bundle\:
+        resource: '%kernel.project_dir%/vendor/jfnetwork/doctrine-encrypted-object/*'
+        exclude: '%kernel.project_dir%/vendor/jfnetwork/doctrine-encrypted-object/{Entity,Migrations,Tests}'
+        autoconfigure: true
+        autowire: true
+
+doctrine_encrypted_object:
+    key: '%doctrine_encrypted_object.key%'
+    encryption_way: '%doctrine_encrypted_object.encryption_way%'
+
