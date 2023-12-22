@@ -4,11 +4,11 @@
     "license": "MIT",
     "description": "Doctrine mapping type to store encrypted objects",
     "require": {
-        "php": "8.0.*",
+        "php": ">=8.1",
         "doctrine/orm": "^2.5",
         "defuse/php-encryption": "^2.1",
-        "symfony/http-kernel": ">=4.0",
-        "symfony/dependency-injection": ">=4.0",
+        "symfony/http-kernel": "4.*|5.*|6.*|7.*",
+        "symfony/dependency-injection": "4.*|5.*|6.*|7.*",
         "symfony/config": ">=4.0"
     },
     "autoload": {

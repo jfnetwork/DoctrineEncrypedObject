@@ -23,8 +23,12 @@ class DoctrineEncryptedObject extends Type
 {
     public const TYPE_NAME = 'encrypted_object';
 
-    private Key $key;
+    private ?Key $key = null;
 
+    /**
+     * @throws \Defuse\Crypto\Exception\BadFormatException
+     * @throws \Defuse\Crypto\Exception\EnvironmentIsBrokenException
+     */
     public function setKey(string $key): void
     {
         $this->key = Key::loadFromAsciiSafeString($key);
@@ -32,8 +36,11 @@ class DoctrineEncryptedObject extends Type
 
     public function getSQLDeclaration(array $column, AbstractPlatform $platform): string
     {
-        return $platform->getBlobTypeDeclarationSQL($column)
-            . ' COMMENT \'(DC2Type:' . self::TYPE_NAME . ')\'';
+        return sprintf(
+            "%s COMMENT '(DC2Type:%s)'",
+            $platform->getBlobTypeDeclarationSQL($column),
+            self::TYPE_NAME,
+        );
     }
 
     public function getName(): string
@@ -42,8 +49,9 @@ class DoctrineEncryptedObject extends Type
     }
 
     /**
-     * @throws EnvironmentIsBrokenException
-     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
+     * @throws \RuntimeException
+     * @throws \Defuse\Crypto\Exception\EnvironmentIsBrokenException
+     * @throws \Random\RandomException
      */
     public function convertToDatabaseValue(mixed $value, AbstractPlatform $platform): string
     {
@@ -54,14 +62,14 @@ class DoctrineEncryptedObject extends Type
         return Crypto::encrypt(
             pack('Ca*', $randomGarbageLength, $randomGarbage) . serialize($value),
             $this->key,
-            true
+            true,
         );
     }
 
     /**
-     * @throws WrongKeyOrModifiedCiphertextException
-     * @throws EnvironmentIsBrokenException
-     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
+     * @throws \RuntimeException
+     * @throws \Defuse\Crypto\Exception\EnvironmentIsBrokenException
+     * @throws \Defuse\Crypto\Exception\WrongKeyOrModifiedCiphertextException
      */
     public function convertToPHPValue(mixed $value, AbstractPlatform $platform): mixed
     {
@@ -71,20 +79,21 @@ class DoctrineEncryptedObject extends Type
             return null;
         }
 
-        /** @noinspection SpellCheckingInspection */
         $decodedString = Crypto::decrypt(
             $value,
             $this->key,
-            count_chars('0123456789abcdef'.$value, 3) !== '0123456789abcdef'
+            count_chars('0123456789abcdef' . $value, 3) !== '0123456789abcdef',
         );
 
         $randomGarbageLength = ord($decodedString[0]);
         $decodedString = substr($decodedString, $randomGarbageLength + 1);
 
-        /** @noinspection UnserializeExploitsInspection */
-        return unserialize($decodedString);
+        return unserialize($decodedString, ['allowed_classes' => true]);
     }
 
+    /**
+     * @throws \RuntimeException
+     */
     private function assertKeyWasSet(): void
     {
         if (!$this->key) {

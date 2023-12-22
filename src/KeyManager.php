@@ -7,10 +7,16 @@ use RuntimeException;
 
 class KeyManager
 {
-    public function __construct(private string $key)
-    {
+    public function __construct(
+        private readonly string $key,
+    ) {
     }
 
+    /**
+     * @throws \Defuse\Crypto\Exception\BadFormatException
+     * @throws \Defuse\Crypto\Exception\EnvironmentIsBrokenException
+     * @throws \Doctrine\DBAL\Exception
+     */
     public function setKey(): void
     {
         $type = Type::getType(DoctrineEncryptedObject::TYPE_NAME);

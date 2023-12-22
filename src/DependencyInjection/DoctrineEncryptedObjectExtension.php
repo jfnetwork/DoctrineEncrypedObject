@@ -8,6 +8,9 @@ use Symfony\Component\HttpKernel\DependencyInjection\Extension;
 
 class DoctrineEncryptedObjectExtension extends Extension
 {
+    /**
+     * @throws \Exception
+     */
     public function load(array $configs, ContainerBuilder $container): void
     {
         $configuration = new Configuration();
@@ -15,6 +18,6 @@ class DoctrineEncryptedObjectExtension extends Extension
 
         $definition = $container->register(KeyManager::class, KeyManager::class);
         $definition->setArguments([$config['key']]);
-        $definition->setPrivate(false);
+        $definition->setPublic(true);
     }
 }
