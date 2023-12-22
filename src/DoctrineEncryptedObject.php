@@ -2,15 +2,9 @@
 
 namespace Jfnetwork\DoctrineEncryptedObject;
 
-use Defuse\Crypto\Crypto;
-use Defuse\Crypto\Exception\EnvironmentIsBrokenException;
-use Defuse\Crypto\Exception\WrongKeyOrModifiedCiphertextException;
-use Defuse\Crypto\Key;
 use Doctrine\DBAL\Platforms\AbstractPlatform;
 use Doctrine\DBAL\Types\Type;
-use RuntimeException;
 
-use function count_chars;
 use function ord;
 use function pack;
 use function random_bytes;
@@ -23,16 +17,7 @@ class DoctrineEncryptedObject extends Type
 {
     public const TYPE_NAME = 'encrypted_object';
 
-    private ?Key $key = null;
-
-    /**
-     * @throws \Defuse\Crypto\Exception\BadFormatException
-     * @throws \Defuse\Crypto\Exception\EnvironmentIsBrokenException
-     */
-    public function setKey(string $key): void
-    {
-        $this->key = Key::loadFromAsciiSafeString($key);
-    }
+    public EncryptionProviderStorage $encryptionProviderStorage;
 
     public function getSQLDeclaration(array $column, AbstractPlatform $platform): string
     {
@@ -49,55 +34,29 @@ class DoctrineEncryptedObject extends Type
     }
 
     /**
-     * @throws \RuntimeException
-     * @throws \Defuse\Crypto\Exception\EnvironmentIsBrokenException
      * @throws \Random\RandomException
      */
     public function convertToDatabaseValue(mixed $value, AbstractPlatform $platform): string
     {
-        $this->assertKeyWasSet();
-
         $randomGarbageLength = random_int(64, 255);
         $randomGarbage = random_bytes($randomGarbageLength);
-        return Crypto::encrypt(
+
+        return $this->encryptionProviderStorage->encrypt(
             pack('Ca*', $randomGarbageLength, $randomGarbage) . serialize($value),
-            $this->key,
-            true,
         );
     }
 
-    /**
-     * @throws \RuntimeException
-     * @throws \Defuse\Crypto\Exception\EnvironmentIsBrokenException
-     * @throws \Defuse\Crypto\Exception\WrongKeyOrModifiedCiphertextException
-     */
     public function convertToPHPValue(mixed $value, AbstractPlatform $platform): mixed
     {
-        $this->assertKeyWasSet();
-
         if (!$value) {
             return null;
         }
 
-        $decodedString = Crypto::decrypt(
-            $value,
-            $this->key,
-            count_chars('0123456789abcdef' . $value, 3) !== '0123456789abcdef',
-        );
+        $decodedString = $this->encryptionProviderStorage->decrypt($value);
 
         $randomGarbageLength = ord($decodedString[0]);
         $decodedString = substr($decodedString, $randomGarbageLength + 1);
 
         return unserialize($decodedString, ['allowed_classes' => true]);
-    }
-
-    /**
-     * @throws \RuntimeException
-     */
-    private function assertKeyWasSet(): void
-    {
-        if (!$this->key) {
-            throw new RuntimeException('encrypt key was not set');
-        }
     }
 }

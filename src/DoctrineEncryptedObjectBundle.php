@@ -11,8 +11,6 @@ class DoctrineEncryptedObjectBundle extends Bundle
     /**
      * @throws \Symfony\Component\DependencyInjection\Exception\ServiceNotFoundException
      * @throws \Symfony\Component\DependencyInjection\Exception\ServiceCircularReferenceException
-     * @throws \Defuse\Crypto\Exception\BadFormatException
-     * @throws \Defuse\Crypto\Exception\EnvironmentIsBrokenException
      * @throws \Doctrine\DBAL\Exception
      */
     public function boot(): void
@@ -21,10 +19,10 @@ class DoctrineEncryptedObjectBundle extends Bundle
             Type::addType(DoctrineEncryptedObject::TYPE_NAME, DoctrineEncryptedObject::class);
         }
 
-        $keyManager = $this->container->get(KeyManager::class);
-        if (!$keyManager instanceof KeyManager) {
-            throw new RuntimeException('Could not find KeyManager service');
+        $storage = $this->container->get(EncryptionProviderStorage::class);
+        if (!$storage instanceof EncryptionProviderStorage) {
+            throw new RuntimeException('Could not find ConfigManager service');
         }
-        $keyManager->setKey();
+        $storage->injectIntoType();
     }
 }

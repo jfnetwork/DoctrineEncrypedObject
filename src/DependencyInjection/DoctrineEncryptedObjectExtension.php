@@ -2,8 +2,10 @@
 
 namespace Jfnetwork\DoctrineEncryptedObject\DependencyInjection;
 
-use Jfnetwork\DoctrineEncryptedObject\KeyManager;
+use Jfnetwork\DoctrineEncryptedObject\EncryptionProviderStorage;
+use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
+use Symfony\Component\DependencyInjection\Loader\YamlFileLoader;
 use Symfony\Component\HttpKernel\DependencyInjection\Extension;
 
 class DoctrineEncryptedObjectExtension extends Extension
@@ -13,11 +15,20 @@ class DoctrineEncryptedObjectExtension extends Extension
      */
     public function load(array $configs, ContainerBuilder $container): void
     {
-        $configuration = new Configuration();
-        $config = $this->processConfiguration($configuration, $configs);
+        // $configuration = new Configuration();
+        // $config = $this->processConfiguration($configuration, $configs);
 
-        $definition = $container->register(KeyManager::class, KeyManager::class);
-        $definition->setArguments([$config['key']]);
-        $definition->setPublic(true);
+        $loader = new YamlFileLoader(
+            $container,
+            new FileLocator(__DIR__ . '/../Resources/config'),
+        );
+        $loader->load('doctrine_encrypted_object.yaml');
+
+        // $definition = $container->register(EncryptionProviderStorage::class, EncryptionProviderStorage::class);
+        // $definition->setAutoconfigured(true);
+        // $definition->setArguments([
+        //     $config['key'],
+        // ]);
+        // $definition->setPublic(true);
     }
 }

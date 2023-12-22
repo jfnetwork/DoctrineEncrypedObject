@@ -8,31 +8,26 @@ The bundle can be installed with composer:
 ```
 composer require jfnetwork/doctrine-encrypted-object
 ```
-Then it should be added to your bundle list:
 
-### Symfony 4
-bundles.php:
-```php
-<?php
+For Sodium or Openssl encryption are corresponding PHP extensions required. For `Defuse` is [defuse/php-encryption](https://github.com/defuse/php-encryption) package required
 
-return [
-    ...,
-    Jfnetwork\DoctrineEncryptedObject\DoctrineEncryptedObjectBundle::class => ['all' => true],
-];
-```
 ## Sample Configuration
+you should provide two environment variables:
 ```yaml
-doctrine_encrypted_object:
-    key: '%env(DOCTRINE_ENCRYPTED_OBJECT_KEY)%'
+DOCTRINE_ENCRYPTED_OBJECT_KEY=xxx
+DOCTRINE_ENCRYPTED_OBJECT_ENCRYPTION_WAY=sodium
 ```
-And the ENV variable should be generated with command:
+The `DOCTRINE_ENCRYPTED_OBJECT_ENCRYPTION_WAY` variable is optional and has value `sodium` by default.
+
+The `DOCTRINE_ENCRYPTED_OBJECT_KEY` variable should be generated with the command:
 ```
-vendor/bin/generate-defuse-key
+bin/console jf:doctrine-encrypted-object:create-key {encryption_way}
 ``` 
-More info about key generation at [tutorial](https://github.com/defuse/php-encryption/blob/master/docs/Tutorial.md) from **defuse/php-encryption** package
+where encryption way is one of `sodium`, `openssl`, `defuse`
 
 ## Usage
 
+### Annotations
 ```php
 /**
  * @ORM\Column(name="your_secure_field", type="encoded_object")
@@ -40,9 +35,14 @@ More info about key generation at [tutorial](https://github.com/defuse/php-encry
 private $yourSecureField;
 ```
 
-## Upgrade from 1.0 to 1.1
+### Attributes
+```php
+use Jfnetwork\DoctrineEncryptedObject\DoctrineEncryptedObject;
 
-The field type was changed from TEXT to BLOB with 1.1. The Doctrine should make a suitable migration for you. Optionally you can add update query from HEX values to binary. For example for MySQL:
-```sql
-UPDATE `your_table` SET `your_secret_field` = UNHEX(`your_secret_field`)
+#[ORM\Column(type: DoctrineEncryptedObject::TYPE_NAME)]
+private $yourSecureField;
 ```
+
+## Upgrade from 2.0 to 3.0
+
+You should set `DOCTRINE_ENCRYPTED_OBJECT_ENCRYPTION_WAY` environment variable to `defuse`. No other configuration is required. Some migration tool to other encryption ways will be provided later.

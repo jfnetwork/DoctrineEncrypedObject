@@ -1,0 +1,18 @@
+parameters:
+    doctrine_encrypted_object_default_encryption_way: sodium
+    doctrine_encrypted_object.key: '%env(DOCTRINE_ENCRYPTED_OBJECT_KEY)%'
+    doctrine_encrypted_object.encryption_way: '%env(enum:Jfnetwork\DoctrineEncryptedObject\EncryptionWay:default:doctrine_encrypted_object_default_encryption_way:DOCTRINE_ENCRYPTED_OBJECT_ENCRYPTION_WAY)%'
+services:
+    _defaults:
+        autowire: true      # Automatically injects dependencies in your services.
+        autoconfigure: true # Automatically registers your services as commands, event subscribers, etc.
+        public: false       # Allows optimizing the container by removing unused services; this also means
+
+    Jfnetwork\DoctrineEncryptedObject\:
+        resource: '%kernel.project_dir%/vendor/jfnetwork/doctrine-encrypted-object/src/*'
+
+    Jfnetwork\DoctrineEncryptedObject\EncryptionProviderStorage:
+        public: true
+        arguments:
+            $key: '%doctrine_encrypted_object.key%'
+            $encryptionWay: '%doctrine_encrypted_object.encryption_way%'
