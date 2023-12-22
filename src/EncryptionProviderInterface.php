@@ -14,4 +14,6 @@ interface EncryptionProviderInterface
     public function encrypt(string $value, string $key): string;
 
     public function supports(EncryptionWay $encryptionWay): bool;
+
+    public function createKey(): string;
 }

@@ -4,11 +4,13 @@ namespace Jfnetwork\DoctrineEncryptedObject\EncryptionProvider;
 
 use Defuse\Crypto\Crypto;
 use Defuse\Crypto\Key;
+use JetBrains\PhpStorm\Deprecated;
 use Jfnetwork\DoctrineEncryptedObject\EncryptionProviderInterface;
 use Jfnetwork\DoctrineEncryptedObject\EncryptionWay;
 
 use function class_exists;
 
+#[Deprecated]
 class Defuse implements EncryptionProviderInterface
 {
     public function decrypt(mixed $value, string $key): string
@@ -40,5 +42,10 @@ class Defuse implements EncryptionProviderInterface
         $keys[$key] ??= Key::loadFromAsciiSafeString($key);
 
         return $keys[$key];
+    }
+
+    public function createKey(): string
+    {
+        return Key::createNewRandomKey()->saveToAsciiSafeString();
     }
 }

@@ -38,10 +38,10 @@ class EncryptionProviderStorage
         $type->encryptionProviderStorage = $this;
     }
 
-    private function getSupportedEncryptionProvider(): EncryptionProviderInterface
+    public function getSupportedEncryptionProvider(?EncryptionWay $encryptionWay = null): EncryptionProviderInterface
     {
         foreach ($this->encryptionProviders as $encryptionProvider) {
-            if ($encryptionProvider->supports($this->encryptionWay)) {
+            if ($encryptionProvider->supports($encryptionWay ?? $this->encryptionWay)) {
                 return $encryptionProvider;
             }
         }

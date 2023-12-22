@@ -8,8 +8,11 @@ use Jfnetwork\DoctrineEncryptedObject\EncryptionWay;
 use function array_map;
 use function explode;
 use function function_exists;
+use function openssl_cipher_iv_length;
 use function openssl_decrypt;
 use function openssl_encrypt;
+use function openssl_random_pseudo_bytes;
+use function sprintf;
 
 class Openssl implements EncryptionProviderInterface
 {
@@ -34,9 +37,18 @@ class Openssl implements EncryptionProviderInterface
         return EncryptionWay::Openssl === $encryptionWay && function_exists('openssl_encrypt');
     }
 
+    public function createKey(): string
+    {
+        return sprintf(
+            '%s:%s',
+            base64_encode(openssl_random_pseudo_bytes(openssl_cipher_iv_length(self::ENCRYPTION_METHOD))),
+            base64_encode(openssl_random_pseudo_bytes(openssl_cipher_iv_length(self::ENCRYPTION_METHOD))),
+        );
+    }
+
     private function getKey(string $key): array
     {
-        // openssl_random_pseudo_bytes(openssl_cipher_iv_length($encryptionMethod))
+        //
         static $keys = [];
         $keys[$key] ??= array_map(
             'base64_decode',

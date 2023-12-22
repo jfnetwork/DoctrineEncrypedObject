@@ -6,10 +6,15 @@ use Jfnetwork\DoctrineEncryptedObject\EncryptionProviderInterface;
 use Jfnetwork\DoctrineEncryptedObject\EncryptionWay;
 
 use function array_map;
+use function base64_encode;
 use function explode;
 use function function_exists;
+use function random_bytes;
 use function sodium_crypto_aead_xchacha20poly1305_ietf_decrypt;
 use function sodium_crypto_aead_xchacha20poly1305_ietf_encrypt;
+use function sprintf;
+
+use const SODIUM_CRYPTO_AEAD_XCHACHA20POLY1305_IETF_NPUBBYTES;
 
 class Sodium implements EncryptionProviderInterface
 {
@@ -33,9 +38,17 @@ class Sodium implements EncryptionProviderInterface
             && function_exists('sodium_crypto_aead_xchacha20poly1305_ietf_encrypt');
     }
 
+    public function createKey(): string
+    {
+        return sprintf(
+            '%s:%s',
+            base64_encode(sodium_crypto_aead_xchacha20poly1305_ietf_keygen()),
+            base64_encode(random_bytes(SODIUM_CRYPTO_AEAD_XCHACHA20POLY1305_IETF_NPUBBYTES)),
+        );
+    }
+
     private function getKey(string $key): array
     {
-        // openssl_random_pseudo_bytes(openssl_cipher_iv_length($encryptionMethod))
         static $keys = [];
         $keys[$key] ??= array_map(
             'base64_decode',
